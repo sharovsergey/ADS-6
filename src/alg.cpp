@@ -1,4 +1,6 @@
 // Copyright 2021 NNTU-CS
+#include <iostream>
+
 using namespace std;
 
 struct Job
