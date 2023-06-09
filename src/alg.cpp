@@ -1,94 +1,82 @@
 // Copyright 2021 NNTU-CS
-#include <iostream>
-#include <cstdlib>
+#endif //INCLUDE_TPQUEUE_H_
 
-using namespace std;
+#include <cassert>
 
-template<typename T>
-class TPQueue
-{
-  // Сюда поместите определения структур и функций
+template<typename T, int size>
+class TPQueue {
 private:
-    T* arr;
-    int size;
-    int begin,
-    end;
-    int count;
+    T* container;
+    int volume;
+    int first, second;
+    int thisSize;
+
 public:
-    TPQueue(int = 100);
-    ~TPQueue();
-    void push(const T &);
-    T pop();
-    T get() const;
-    bool isEmpty() const;
-    bool isFull() const;
-};
-
-// Определение методов шаблона класса:
-
-template<typename T>
-TPQueue<T>::TPQueue(int sizeQueue) :
-    size(sizeQueue), 
-    begin(0), 
-    end(0), 
-    count(0)
-{
-    arr = new T[size + 1];
-}
-
-template<typename T>
-TPQueue<T>::~TPQueue()
-{
-    delete[] arr;
-}
-
-template<typename T>
-void TPQueue<T>::push(const T& item)
-{
-    assert(count < size);
-    int cur = end;
-    while (cur != begin && item.prior > arr[(cur - 1 + size) % size].prior)
-    {
-        arr[cur] = arr[(cur - 1 + size) % size];
-        cur = (cur - 1 + size) % size;
+    TPQueue() :volume(size), first(0), second(0), thisSize(0) {
+        container = new T[volume + 1];
     }
-    arr[cur] = item;
-    end = (end + 1) % size;
-    count++;
-}
 
-template<typename T>
-T TPQueue<T>::pop()
-{
-    assert(count > 0);
-    T item = arr[begin];
-    begin = (begin + 1) % size;
-    count--;
-    return item;
-}
+    void push(const T& value) {
+        assert(thisSize < volume);
 
-template<typename T>
-T TPQueue<T>::get() const
-{
-    assert(count > 0);
-    return arr[begin];
-}
+        if (thisSize == 0) {
+            container[second++] = value;
+            thisSize++;
+        } else {
+            int i = second - 1;
+            bool flag = false;
 
-template<typename T>
-bool TPQueue<T>::isEmpty() const
-{
-    return (count == 0);
-}
+            while (i >= first && value.prior > container[i].prior) {
+                flag = true;
+                container[i + 1] = container[i];
+                container[i] = value;
+                i--;
+            }
 
-template<typename T>
-bool TPQueue<T>::isFull() const
-{
-    return (count == size);
-}
+            if (!flag) {
+                container[second] = value;
+            }
 
-struct SYM
-{
-	char ch;
-  int  prior;
+            second++;
+            thisSize++;
+        }
+
+        if (second > volume) {
+            second -= volume + 1;
+        }
+    }
+
+    const T& pop() {
+        assert(thisSize > 0);
+
+        thisSize--;
+
+        if (first > volume) {
+            first -= volume + 1;
+        }
+
+        return container[first++];
+    }
+
+    char get() {
+        assert(thisSize > 0);
+        return container[first].ch;
+    }
+
+    bool isFull() const {
+        return thisSize == volume;
+    }
+
+    bool isEmpty() const {
+        return thisSize == 0;
+    }
+
+    ~TPQueue() {
+        delete[] container;
+    }
 };
+
+struct SYM {
+    char ch;
+    int prior;
 };
