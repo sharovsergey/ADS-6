@@ -1,78 +1,56 @@
 // Copyright 2022 NNTU-CS
 #ifndef INCLUDE_TPQUEUE_H_
 #define INCLUDE_TPQUEUE_H_
-
-#include <cassert>
+#include <string>
 
 template<typename T, int size>
 class TPQueue {
   // реализация шаблона очереди с приоритетом на кольцевом буфере
  private:
-  T* container;
-  int capacity;
-  int first, last;
-  int currentSize;
+    T* arr;
+    int f, l, count;
 
  public:
-  TPQueue() :capacity(size), first(0), last(0), currentSize(0) {
-    container = new T[capacity + 1];
-  }
-
-  void push(const T& value) {
-    assert(currentSize < capacity);
-    if (currentSize == 0) {
-      container[last++] = value;
-      currentSize++;
-    } else {
-      int i = last - 1;
-      bool flag = 0;
-      while (i >= first && value.prior > container[i].prior) {
-        flag = 1;
-        container[i + 1] = container[i];
-        container[i] = value;
-        i--;
+    TPQueue() : f(0), l(0), count(0) {
+    arr = new T[size];
+    }
+    ~TPQueue() {
+      delete[] arr;
+    }
+    int isEmpty() const {
+      return count == 0;
+    }
+    int isFull() const {
+      return count == size;
+    }
+    void push(const T& value) {
+      if (isFull()) {
+        throw std::string("Full");
+      } else {
+          int temp = l;
+          for (int i = l; i > f; i--) {
+            if (arr[i - 1].prior < value.prior) {
+              temp = i - 1;
+              arr[i % size] = arr[i - 1];
+            }
+          }
+          arr[temp % size] = value;
+          count++;
+          l++;
       }
-      if (flag == 0) {
-        container[last] = value;
+    }
+    const T& pop() {
+      if (isEmpty()) {
+        throw std::string("Empty");
+      } else {
+          count--;
+          return arr[f++ % size];
       }
-      last++;
-      currentSize++;
     }
-    if (last > capacity) {
-      last -= capacity + 1;
-    }
-  }
-
-  const T& pop() {
-    assert(currentSize > 0);
-    currentSize--;
-    if (first > capacity) {
-      first -= capacity + 1;
-    }
-    return container[first++];
-  }
-
-  char get() {
-    assert(currentSize > 0);
-    return container[first].ch;
-  }
-
-  bool isFull() const {
-    return currentSize == capacity;
-  }
-
-  bool isEmpty() const {
-    return currentSize == 0;
-  }
-
-  ~TPQueue() {
-    delete[] container;
-  }
 };
 
 struct SYM {
   char ch;
   int prior;
 };
-
 #endif  // INCLUDE_TPQUEUE_H_
