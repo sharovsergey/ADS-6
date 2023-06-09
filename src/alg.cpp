@@ -87,22 +87,3 @@ bool TPQueue::empty() const
 {
     return (head == nullptr);
 }
-
-int main()
-{
-    TPQueue queue;
-
-    queue.push(4, "Task 4");
-    queue.push(2, "Task 2");
-    queue.push(1, "Task 1");
-    queue.push(5, "Task 5");
-    queue.push(3, "Task 3");
-
-    while (!queue.empty())
-    {
-        cout << queue.front().description << endl;
-        queue.pop();
-    }
-
-    return 0;
-}
