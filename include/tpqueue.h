@@ -1,57 +1,55 @@
 // Copyright 2022 NNTU-CS
-// Copyright 2022 NNTU-CS
-#ifndef INCLUDE_TPQUEUE_H_
-#define INCLUDE_TPQUEUE_H_
-#include <string>
-
-template<typename T, int size>
-class TPQueue {
-  // реализация шаблона очереди с приоритетом на кольцевом буфере
- private:
-    T* arr;
-    int f, l, count;
-
- public:
-    TPQueue() : f(0), l(0), count(0) {
-    arr = new T[size];
-    }
-    ~TPQueue() {
-      delete[] arr;
-    }
-    int isEmpty() const {
-      return count == 0;
-    }
-    int isFull() const {
-      return count == size;
-    }
-    void push(const T& value) {
-      if (isFull()) {
-        throw std::string("Full");
-      } else {
-          int temp = l;
-          for (int i = l; i > f; i--) {
-            if (arr[i - 1].prior < value.prior) {
-              temp = i - 1;
-              arr[i % size] = arr[i - 1];
-            }
-          }
-          arr[temp % size] = value;
-          count++;
-          l++;
-      }
-    }
-    const T& pop() {
-      if (isEmpty()) {
-        throw std::string("Empty");
-      } else {
-          count--;
-          return arr[f++ % size];
-      }
-    }
-};
+#include <iostream>
+#include "include/tpqueue.h" // Подключение файла с реализацией TPQueue
 
 struct SYM {
-  char ch;
-  int prior;
+    char ch;
+    int prior;
 };
-#endif  // INCLUDE_TPQUEUE_H_
+
+// Переопределение оператора << для вывода объектов типа SYM
+std::ostream& operator<<(std::ostream& os, const SYM& item) {
+    os << item.ch << '(' << item.prior << ')';
+    return os;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    TPQueue<SYM> queue;
+
+    // Добавление элементов в очередь
+    SYM item1 = { 'A', 5 };
+    SYM item2 = { 'B', 3 };
+    SYM item3 = { 'C', 8 };
+    SYM item4 = { 'D', 2 };
+
+    queue.push(item1);
+    queue.push(item2);
+    queue.push(item3);
+    queue.push(item4);
+
+    // Вывод содержимого очереди
+    std::cout << "Очередь: ";
+    queue.print(); // Ожидаемый результат: D B A C
+    std::cout << "Ожидаемый результат: D B A C" << std::endl << std::endl;
+
+    // Извлечение элемента с наивысшим приоритетом
+    SYM highestPriorityItem = queue.pop();
+    std::cout << "Символ с самым высоким приоритетом: " << highestPriorityItem.ch << std::endl; // Ожидаемый результат: D
+    std::cout << "Ожидаемый результат: D" << std::endl << std::endl;
+
+    // Вывод содержимого очереди после извлечения элемента
+    std::cout << "Очередь после команды pop: ";
+    queue.print(); // Ожидаемый результат: B A C
+    std::cout << "Ожидаемый результат: B A C" << std::endl << std::endl;
+
+    SYM item5 = { 'Q', 1 };
+    queue.push(item5);
+
+    std::cout << "Очередь после команды push: ";
+    queue.print(); // Ожидаемый результат: Q B A C
+    std::cout << "Ожидаемый результат: Q B A C" << std::endl << std::endl;
+
+    return 0;
+}
+
