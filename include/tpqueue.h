@@ -1,55 +1,114 @@
 // Copyright 2022 NNTU-CS
-#include <iostream>
-#include "include/tpqueue.h" // Подключение файла с реализацией TPQueue
+#ifndef TPQUEUE_H
+#define TPQUEUE_H
 
-struct SYM {
-    char ch;
-    int prior;
+template<typename T>
+class TPQueue
+{
+private:
+    struct ITEM
+    {
+        T data;
+        ITEM* next;
+    };
+
+    ITEM* head;
+    ITEM* tail;
+    int count;
+
+public:
+    TPQueue() : head(nullptr), tail(nullptr), count(0) {}
+    ~TPQueue();
+
+    void push(const T&);
+    T pop();
+    void print() const;
 };
 
-// Переопределение оператора << для вывода объектов типа SYM
-std::ostream& operator<<(std::ostream& os, const SYM& item) {
-    os << item.ch << '(' << item.prior << ')';
-    return os;
+template<typename T>
+TPQueue<T>::~TPQueue()
+{
+    while (head)
+    {
+        ITEM* temp = head->next;
+        delete head;
+        head = temp;
+    }
 }
 
-int main() {
-    setlocale(LC_ALL, "Russian");
-    TPQueue<SYM> queue;
+template<typename T>
+void TPQueue<T>::push(const T& item)
+{
+    ITEM* temp = new ITEM;
+    temp->data = item;
+    temp->next = nullptr;
 
-    // Добавление элементов в очередь
-    SYM item1 = { 'A', 5 };
-    SYM item2 = { 'B', 3 };
-    SYM item3 = { 'C', 8 };
-    SYM item4 = { 'D', 2 };
+    if (head == nullptr)
+    {
+        head = temp;
+        tail = temp;
+    }
+    else if (item.prior <= head->data.prior)
+    {
+        temp->next = head;
+        head = temp;
+    }
+    else if (item.prior >= tail->data.prior)
+    {
+        tail->next = temp;
+        tail = temp;
+    }
+    else
+    {
+        ITEM* current = head->next;
+        ITEM* previous = head;
 
-    queue.push(item1);
-    queue.push(item2);
-    queue.push(item3);
-    queue.push(item4);
+        while (current)
+        {
+            if (item.prior > current->data.prior)
+            {
+                previous->next = temp;
+                temp->next = current;
+                break;
+            }
 
-    // Вывод содержимого очереди
-    std::cout << "Очередь: ";
-    queue.print(); // Ожидаемый результат: D B A C
-    std::cout << "Ожидаемый результат: D B A C" << std::endl << std::endl;
+            previous = current;
+            current = current->next;
+        }
+    }
 
-    // Извлечение элемента с наивысшим приоритетом
-    SYM highestPriorityItem = queue.pop();
-    std::cout << "Символ с самым высоким приоритетом: " << highestPriorityItem.ch << std::endl; // Ожидаемый результат: D
-    std::cout << "Ожидаемый результат: D" << std::endl << std::endl;
-
-    // Вывод содержимого очереди после извлечения элемента
-    std::cout << "Очередь после команды pop: ";
-    queue.print(); // Ожидаемый результат: B A C
-    std::cout << "Ожидаемый результат: B A C" << std::endl << std::endl;
-
-    SYM item5 = { 'Q', 1 };
-    queue.push(item5);
-
-    std::cout << "Очередь после команды push: ";
-    queue.print(); // Ожидаемый результат: Q B A C
-    std::cout << "Ожидаемый результат: Q B A C" << std::endl << std::endl;
-
-    return 0;
+    count++;
 }
+
+template<typename T>
+T TPQueue<T>::pop()
+{
+    if (head)
+    {
+        ITEM* temp = head->next;
+        T item = head->data;
+        delete head;
+        head = temp;
+        count--;
+        return item;
+    }
+
+    return T();
+}
+
+template<typename T>
+void TPQueue<T>::print() const
+{
+    ITEM* current = head;
+
+    while (current)
+    {
+        std::cout << current->data << " ";
+        current = current->next;
+    }
+
+    std::cout << std::endl;
+}
+
+#endif // TPQUEUE_H
 
