@@ -1,67 +1,114 @@
 // Copyright 2022 NNTU-CS
-#ifndef INCLUDE_TPQUEUE_H_
-#define INCLUDE_TPQUEUE_H_
+#ifndef TPQUEUE_H
+#define TPQUEUE_H
 #include <cassert>
-template<typename T, int size>
-class TPQueue {
- private:
-  T* container;
-  int volume;
-  int first, second;
-  int thisSize;
 
- public:
-  TPQueue() :volume(size), first(0), second(0), thisSize(0) {
-    container = new T[volume + 1];
-  }
-  void push(const T& value) {
-    assert(thisSize < volume);
-    if (thisSize == 0) {
-      container[second++] = value;
-      thisSize++;
-    } else {
-      int i = second - 1;
-      bool flag = 0;
-      while (i >= first && value.prior > container[i].prior) {
-        flag = 1;
-        container[i + 1] = container[i];
-        container[i] = value;
-        i--;
-      }
-      if (flag == 0) {
-        container[second] = value;
-      }
-      second++;
-      thisSize++;
-    }
-    if (second > volume) {
-      second -= volume + 1;
-    }
-  }
-  const T& pop() {
-    assert(thisSize > 0);
-    thisSize--;
-    if (first > volume) {
-      first -= volume + 1;
-    }
-    return container[first++];
-  }
-  char get() {
-    assert(thisSize > 0);
-    return container[first].ch;
-  }
-  bool isFull() const {
-    return thisSize == volume;
-  }
-  bool isEmpty() const {
-    return thisSize == 0;
-  }
-  ~TPQueue() {
-    delete[] container;
-  }
+template<typename T>
+class TPQueue
+{
+private:
+    struct ITEM
+    {
+        T data;
+        ITEM* next;
+    };
+
+    ITEM* head;
+    ITEM* tail;
+    int count;
+
+public:
+    TPQueue() : head(nullptr), tail(nullptr), count(0) {}
+    ~TPQueue();
+
+    void push(const T&);
+    T pop();
+    void print() const;
 };
-struct SYM {
-  char ch;
-  int prior;
-};
-#endif  // INCLUDE_TPQUEUE_H_
+
+template<typename T>
+TPQueue<T>::~TPQueue()
+{
+    while (head)
+    {
+        ITEM* temp = head->next;
+        delete head;
+        head = temp;
+    }
+}
+
+template<typename T>
+void TPQueue<T>::push(const T& item)
+{
+    ITEM* temp = new ITEM;
+    temp->data = item;
+    temp->next = nullptr;
+
+    if (head == nullptr)
+    {
+        head = temp;
+        tail = temp;
+    }
+    else if (item.prior <= head->data.prior)
+    {
+        temp->next = head;
+        head = temp;
+    }
+    else if (item.prior >= tail->data.prior)
+    {
+        tail->next = temp;
+        tail = temp;
+    }
+    else
+    {
+        ITEM* current = head->next;
+        ITEM* previous = head;
+
+        while (current)
+        {
+            if (item.prior > current->data.prior)
+            {
+                previous->next = temp;
+                temp->next = current;
+                break;
+            }
+
+            previous = current;
+            current = current->next;
+        }
+    }
+
+    count++;
+}
+
+template<typename T>
+T TPQueue<T>::pop()
+{
+    if (head)
+    {
+        ITEM* temp = head->next;
+        T item = head->data;
+        delete head;
+        head = temp;
+        count--;
+        return item;
+    }
+
+    return T();
+}
+
+template<typename T>
+void TPQueue<T>::print() const
+{
+    ITEM* current = head;
+
+    while (current)
+    {
+        std::cout << current->data << " ";
+        current = current->next;
+    }
+
+    std::cout << std::endl;
+}
+
+#endif // TPQUEUE_H
